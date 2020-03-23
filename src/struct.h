@@ -8,8 +8,8 @@
  */
 typedef struct PloyItem
 {
-	double coef;				/**< 系数 */
-	int expn;					/**< 指数 */
+	double coef;				//! 系数 */
+	int expn;					//! 指数 */
 	struct PloyItem* next;
 }PloyItem;
 
@@ -19,8 +19,8 @@ typedef struct PloyItem
  */
 typedef struct PloyTitle
 {
-	std::string name;			/**< 多项式名 */
-	PloyItem* head;				/**< 首项地址 */
+	std::string name;			//! 多项式名 */
+	PloyItem* head;				//! 首项地址 */
 }PloyTitle;
 
 #endif //STRUCTH_INCLUDE
