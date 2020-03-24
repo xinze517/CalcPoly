@@ -5,9 +5,6 @@
 
 #include "ploy_operate.h"
 
-//! double精度误差 */
-constexpr auto DOUBLE_EPS = 1e-15;
-
 /**
  * @brief 向多项式链表中插入单项式
  * 自动合并同类项、按指数大小升序插入
@@ -30,22 +27,35 @@ void InsertItemToPloy(PloyTitle* ployPtr, PloyItem* itemPtr)
             prePtr = curPtr;
             curPtr = curPtr->next;
         }
-        if (prePtr == nullptr)  //! 待插入项在链表首 */
-        {
-            itemPtr->next = curPtr;
-            ployPtr->head = itemPtr;
-        }
-        else if (curPtr == nullptr) //! 待插入项在链表尾 */
-        {
+		if (curPtr == nullptr) //! 待插入项在链表尾 */
+		{
 			prePtr->next = itemPtr;
 			itemPtr->next = nullptr;
+		}
+        else if (prePtr == nullptr) //! 待插入项在链表首或链表首前 */
+        {
+            if (curPtr->expn == itemPtr->expn)  //! 待插入项与首项指数相同 */
+            {
+				curPtr->coef += itemPtr->coef;
+				if (fabs(curPtr->coef) <= DOUBLE_EPS)   //! 判断加和后的结果是否为0 */
+				{
+					ployPtr->head = curPtr->next;
+					delete curPtr;
+				}
+				delete itemPtr; //! 回收插入项空间 */
+            }
+            else    //! 待插入项在链表首 */
+            {
+				itemPtr->next = curPtr;
+				ployPtr->head = itemPtr;
+            }
         }
-        else if(itemPtr->expn < curPtr->expn)  //! 待插入项在链表中 */
+        else if(itemPtr->expn < curPtr->expn)  //! 待插入项在链表中(curPtr之前，prePtr之后) */
         {
             prePtr->next = itemPtr;
             itemPtr->next = curPtr;
         }
-        else    //! 存在与待插入项指数相同的项 */
+        else if(itemPtr->expn == curPtr->expn)   //! 存在与待插入项指数相同的项 */
         {
             curPtr->coef += itemPtr->coef;
 			if (fabs(curPtr->coef) <= DOUBLE_EPS)   //! 判断加和后的结果是否为0 */
@@ -152,9 +162,9 @@ std::string PloyToStr(PloyTitle* ployPtr)
                 ss << "-";
             }
             //组合系数
-            if (itemPtr->coef != 1)
+            if (!IS_DOUBLE_EQUAL(itemPtr->coef, 1) && !IS_DOUBLE_EQUAL(itemPtr->coef, -1))   //判断浮点数是否等于1、-1
             {
-                ss << std::fixed << std::setprecision(1) << fabs(itemPtr->coef);
+                ss << fabs(itemPtr->coef);
             }
             //组合指数
             if (itemPtr->expn != 0)
@@ -169,4 +179,23 @@ std::string PloyToStr(PloyTitle* ployPtr)
         }
     }
     return ss.str();
+}
+
+/**
+ * @brief 移除多项式占用的内存空间
+ */
+void ReomvePloy(PloyTitle* ployPtr)
+{
+    if (ployPtr && ployPtr->head)
+    {
+		PloyItem* itemPtr = ployPtr->head;
+		PloyItem* prePtr = itemPtr;
+		while (itemPtr)
+		{
+            prePtr = itemPtr;
+            itemPtr = itemPtr->next;
+            delete prePtr;
+		}
+        delete ployPtr;
+    }
 }

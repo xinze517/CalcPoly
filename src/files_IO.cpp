@@ -8,8 +8,9 @@ std::vector<std::string> ReadPloyFromFiles()
 {
 	std::vector<std::string> ployStrVec;
 	std::ifstream infile;
-	infile.open("input.txt");
+	infile.open(INPUT_FILE);
 	std::string ployStrA, ployStrB;
+	//! 仅读取两个多项式 */
 	infile >> ployStrA >> ployStrB;
 	ployStrVec.push_back(ployStrA);
 	ployStrVec.push_back(ployStrB);
@@ -23,7 +24,8 @@ std::vector<std::string> ReadPloyFromFiles()
 void WritePloyToFiles(std::vector<PloyTitle*>& ployVec)
 {
 	std::ofstream outfile;
-	outfile.open("output.txt", std::ios::trunc);
+	//! 使用截断模式打开文件（将清空文件原有内容） */
+	outfile.open(OUTPUT_FILE, std::ios::trunc);
 	for (auto ployPtr: ployVec)
 	{
 		outfile << PloyToStr(ployPtr) << std::endl;

@@ -1,11 +1,12 @@
 #include "interfaces.h"
+#include "parse_string.h"
 
 /**
  * @brief 读取选项
  */
 int SelectResult()
 {
-	std::cout << "[Option] 请输入选项：";
+	ShowMsg("Option", "请输入选项：", false);
 	int option;
 	std::cin >> option;
 	return option;
@@ -14,14 +15,15 @@ int SelectResult()
 /**
  * @brief 初始化多项式字符串
  */
-void Init(std::string& ployStrA, std::string& ployStrB)
+void Init(std::vector<PloyTitle*>& ployVec)
 {
-	std::cout << "[Program] 多项式计算程序" << std::endl;
-	std::cout << "[1] 使用文件输入多项式" << std::endl;
-	std::cout << "[2] 使用终端输入多项式" << std::endl;
+	ShowMsg("Info", "欢迎使用多项式计算程序");
+	ShowMsg("1", "使用文件输入多项式");
+	ShowMsg("2", "使用终端输入多项式");
+	ShowMsg("0", "退出程序");
 	
 	int option = SelectResult();
-
+	std::string ployStrA, ployStrB;
 	switch (option)
 	{
 	case 1:
@@ -30,72 +32,95 @@ void Init(std::string& ployStrA, std::string& ployStrB)
 		ployStrVec = ReadPloyFromFiles();
 		ployStrA = ployStrVec[0];
 		ployStrB = ployStrVec[1];
-		std::cout << "[Read] " << ployStrA << std::endl;
-		std::cout << "[Read] " << ployStrB << std::endl;
+		ShowMsg("Read", ployStrA);
+		ShowMsg("Read", ployStrB);
 	}
 		break;
 	case 2:
 	{
-		std::cout << "[input] 请输入多项式A：";
+		ShowMsg("Input", "请输入多项式A：", false);
 		std::cin >> ployStrA;
-		std::cout << "[input] 请输入多项式B：";
+		ShowMsg("Input", "请输入多项式B：", false);
 		std::cin >> ployStrB;
 	}
 		break;
+	case 0:	//! 未输入正确选项则退出程序 */
 	default:
+		ShowMsg("Info", "已退出程序！");
+		exit(0);
 		break;
 	}
+	PloyTitle* ployPtrA = parseStrToPloy(ployStrA);
+	PloyTitle* ployPtrB = parseStrToPloy(ployStrB);
+	if (ployPtrA && ployPtrB)
+	{
+		ployVec.push_back(ployPtrA);
+		ployVec.push_back(ployPtrB);
+	}
+	else
+	{
+		ShowMsg("Warn", "多项式转换失败，退出程序！");
+		exit(0);
+	}
+	
 }
 
-
 /**
- * @brief 提前继续所有表达式结果
+ * @brief 提前计算所有表达式结果
  */
-void Calc(PloyTitle* ployA, PloyTitle* ployB, std::vector<PloyTitle*>& resultVec)
+void Calc(std::vector<PloyTitle*>& ployVec)
 {
+	PloyTitle* ployPtrA = GetPloyByName(ployVec, "A");
+	PloyTitle* ployPtrB = GetPloyByName(ployVec, "B");
 	//A+B
-	resultVec.push_back(AddandSubForPloy(ployA, ployB, OPFLAG::ADD));
+	ployVec.push_back(AddandSubForPloy(ployPtrA, ployPtrB, OPFLAG::ADD));
 	//A-B B-A
-	resultVec.push_back(AddandSubForPloy(ployA, ployB, OPFLAG::SUB));
-	resultVec.push_back(AddandSubForPloy(ployB, ployA, OPFLAG::SUB));
+	ployVec.push_back(AddandSubForPloy(ployPtrA, ployPtrB, OPFLAG::SUB));
+	ployVec.push_back(AddandSubForPloy(ployPtrB, ployPtrA, OPFLAG::SUB));
 	//A*B
-	resultVec.push_back(MulForPloy(ployA, ployB));
+	ployVec.push_back(MulForPloy(ployPtrA, ployPtrB));
 }
 
 /**
  * @brief 根据选项输出多项式计算结构
  */
-void ShowResult(std::vector<PloyTitle*>& resultVec)
+void ShowResult(std::vector<PloyTitle*>& ployVec)
 {
 	std::cout << std::endl;
-	std::cout << "[Info] 输入选项以进行相关操作" << std::endl;
-	std::cout << "[1] A+B" << "\t\t[2] A-B" << "\t\t[3] A*B" << std::endl;
-	std::cout << "[4] B-A" << "\t\t[5] Exit" << "\t\t[0] 输出全部结果至 output.txt" << std::endl;
+	ShowMsg("Info", "输入选项以进行相关操作");
+	std::cout << "[1] A" << "\t\t[2] B" << "\t\t[3] A+B" << "\t\t[4] A-B" << std::endl;
+	std::cout << "[5] B-A" << "\t\t[6] A*B" << "\t\t[7] Export" << "\t[0] Exit" <<  std::endl;
 	
 	int option = SelectResult();
 
 	switch (option)
 	{
 	case 1:
-		std::cout << "[output] " << PloyToStr(GetPloyByName(resultVec, "A+B"));
+		ShowMsg("Output", PloyToStr(GetPloyByName(ployVec, "A")));
 		break;
 	case 2:
-		std::cout << "[output] " << PloyToStr(GetPloyByName(resultVec, "A-B"));
+		ShowMsg("Output", PloyToStr(GetPloyByName(ployVec, "B")));
 		break;
 	case 3:
-		std::cout << "[output] " << PloyToStr(GetPloyByName(resultVec, "A*B"));
+		ShowMsg("Output", PloyToStr(GetPloyByName(ployVec, "A+B")));
 		break;
 	case 4:
-		std::cout << "[output] " << PloyToStr(GetPloyByName(resultVec, "B-A"));
+		ShowMsg("Output", PloyToStr(GetPloyByName(ployVec, "A-B")));
 		break;
 	case 5:
-		std::cout << "[output] " << PloyToStr(GetPloyByName(resultVec, "B*A"));
+		ShowMsg("Output", PloyToStr(GetPloyByName(ployVec, "B-A")));
 		break;
 	case 6:
-		exit(0);
-	case 0:
-		WritePloyToFiles(resultVec);
+		ShowMsg("Output", PloyToStr(GetPloyByName(ployVec, "A*B")));
 		break;
+	case 7:
+		WritePloyToFiles(ployVec);
+		ShowMsg("Info", "计算结果已输出到 output.txt");
+		break;
+	case 0:
+		RecoverSpace(ployVec);
+		ShowMsg("Info", " 已退出程序！");
+		exit(0);
 	default:
 		break;
 	}
@@ -105,9 +130,9 @@ void ShowResult(std::vector<PloyTitle*>& resultVec)
 /**
  * @brief 根据多项式名获取多项式
  */
-PloyTitle* GetPloyByName(std::vector<PloyTitle*>& resultVec, const std::string& name)
+PloyTitle* GetPloyByName(std::vector<PloyTitle*>& ployVec, const std::string& name)
 {
-	for (auto ployPtr: resultVec)
+	for (auto ployPtr: ployVec)
 	{
 		if (ployPtr->name == name)
 		{
@@ -120,6 +145,24 @@ PloyTitle* GetPloyByName(std::vector<PloyTitle*>& resultVec, const std::string& 
 /**
  * @brief 回收空间
  */
-void RecoverSpace(std::vector<PloyTitle*>& resultVec)
+void RecoverSpace(std::vector<PloyTitle*>& ployVec)
 {
+	for (auto ployPtr: ployVec)
+	{
+		ReomvePloy(ployPtr);
+	}
+	//! 清除vector元素 */
+	ployVec.clear();
+}
+
+/**
+ * @brief 输出提示信息
+ */
+void ShowMsg(const std::string& prefix, const std::string& content, bool newLine)
+{
+	std::cout << "[" + prefix + "] " + content;
+	if (newLine)
+	{
+		std::cout << std::endl;
+	}
 }

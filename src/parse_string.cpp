@@ -30,7 +30,27 @@ PloyItem* parseStrToPloyItem(const std::string& matchStr)
 		//! 正则式的两个捕获smt[1]和smt[2]分别对应系数与指数
 		//! 当未捕获到对应位置的数据时，smt[1]/smt[2]的matched的值为false
 		//! 对应的是值为1被省略的情况
-		itemPtr->coef = smt[1].matched != false ? atof(smt[1].str().c_str()) : 1;
+
+		//! 检查项目匹配 */
+		if (smt[1].matched)
+		{
+			if (smt[1] == "+" || smt[1] == "")
+			{
+				itemPtr->coef = 1;
+			}
+			else if (smt[1] == "-")
+			{
+				itemPtr->coef = -1;
+			}
+			else
+			{
+				itemPtr->coef = atof(smt[1].str().c_str());
+			}
+		}
+		else
+		{
+			itemPtr->coef = 1;
+		}
 		itemPtr->expn = smt[2].matched != false ? atoi(smt[2].str().c_str()) : 1;
 	}
 	else	//! 该表达式类型为纯数字
@@ -76,7 +96,10 @@ PloyTitle* parseStrToPloy(const std::string& ployStr)
 	for (auto iter = begin; iter != std::sregex_iterator(); iter++)
 	{
 		PloyItem* itemPtr = parseStrToPloyItem(iter->str());
-		InsertItemToPloy(ployPtr, itemPtr);
+		if (itemPtr)
+		{
+			InsertItemToPloy(ployPtr, itemPtr);
+		}
 	}
 	
 	return ployPtr;
